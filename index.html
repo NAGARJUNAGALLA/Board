@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Drawing Board</title>
+
+<style>
+    body {
+        margin: 0;
+        background: #000;
+        font-family: Arial;
+        overflow: hidden;
+    }
+
+    /* Chalkboard */
+    #board {
+        background: #0d3b20;
+        width: 100vw;
+        height: calc(100vh - 90px);
+        touch-action: none;
+    }
+
+    /* Bottom toolbar */
+    #toolbar {
+        height: 90px;
+        background: #1f1f1f;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 5px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+
+    .tool {
+        width: 55px;
+        height: 55px;
+        border-radius: 12px;
+        background: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 12px;
+        flex-direction: column;
+    }
+
+    #colorPicker {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 3px solid white;
+        background: red;
+    }
+
+    button {
+        border: none;
+        color: white;
+        background: #444;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+</style>
+</head>
+
+<body>
+
+<canvas id="board"></canvas>
+
+<div id="toolbar">
+
+    <!-- Color Picker -->
+    <input type="color" id="colorPicker">
+
+    <!-- Pen -->
+    <div class="tool" onclick="setTool('pen')">Pen</div>
+
+    <!-- Marker -->
+    <div class="tool" onclick="setTool('marker')">Marker</div>
+
+    <!-- Brush -->
+    <div class="tool" onclick="setTool('brush')">Brush</div>
+
+    <!-- Eraser -->
+    <div class="tool" onclick="setTool('eraser')">Erase</div>
+
+    <!-- Clear -->
+    <button onclick="clearBoard()">Clear</button>
+
+</div>
+
+<script>
+    const canvas = document.getElementById("board");
+    const ctx = canvas.getContext("2d");
+
+    // Canvas resize
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 90;
+    }
+    resize();
+
+    window.addEventListener("resize", resize);
+
+    let drawing = false;
+    let tool = "pen";
+    let color = "#ffffff";
+    let size = 3;
+
+    document.getElementById("colorPicker").oninput = (e) => {
+        color = e.target.value;
+    };
+
+    function setTool(t) {
+        tool = t;
+        if (t == "pen") size = 3;
+        if (t == "marker") size = 8;
+        if (t == "brush") size = 15;
+        if (t == "eraser") size = 20;
+    }
+
+    function clearBoard() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Drawing functions
+    function start(e) {
+        drawing = true;
+        draw(e);
+    }
+
+    function stop() {
+        drawing = false;
+        ctx.beginPath();
+    }
+
+    function draw(e) {
+        if (!drawing) return;
+
+        ctx.lineCap = "round";
+
+        if (tool === "eraser") {
+            ctx.strokeStyle = "#0d3b20";
+        } else {
+            ctx.strokeStyle = color;
+        }
+
+        ctx.lineWidth = size;
+
+        let x = e.touches ? e.touches[0].clientX : e.clientX;
+        let y = e.touches ? e.touches[0].clientY : e.clientY;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    // Mouse events
+    canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mouseup", stop);
+    canvas.addEventListener("mousemove", draw);
+
+    // Touch events
+    canvas.addEventListener("touchstart", start);
+    canvas.addEventListener("touchend", stop);
+    canvas.addEventListener("touchmove", draw);
+</script>
+
+</body>
+</html>
