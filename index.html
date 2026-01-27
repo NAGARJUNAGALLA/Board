@@ -185,6 +185,7 @@
             <button class="btn" onclick="openConfig('table')">▦ Table</button>
             <button class="btn" onclick="openConfig('matching')">⇄ Matching</button>
             <button class="btn" onclick="openConfig('math')">𝝅 Formula</button>
+            <button class="btn" onclick="openconfig('text')">📝 Text Box</button>
         </div>
 
         <div class="tool-group">
@@ -379,6 +380,9 @@
                     <textarea id="inpD" rows="1">${data ? data.o[3] : 'Option D'}</textarea>
                 `;
             } 
+            else if (type =='text'){
+                title.innertext= existingGroup?"Edit Text":"Add Text";
+                    }
             else if (type === 'matching') {
                 title.innerText = existingGroup ? "Edit Matching" : "Add Matching";
                 const pairs = data ? data.pairs : [['A','1'], ['B','2'], ['C','3'], ['D','4']];
