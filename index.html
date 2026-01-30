@@ -38,10 +38,6 @@
             z-index: 1000; display: flex; align-items: center; justify-content: center;
             color: #333; font-size: 1.1rem;
         }
-        .canvas-wrapper { 
-    transition: opacity 0.1s ease-in-out; 
-        }
-        
 
         .sidebar {
             width: var(--sidebar-width);
@@ -766,7 +762,26 @@
         function setVintageBg() { canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas)); const pattern = new fabric.Gradient({ type: 'radial', coords: { r1: 0, r2: BASE_WIDTH, x1: BASE_WIDTH/2, y1: BASE_HEIGHT/2, x2: BASE_WIDTH/2, y2: BASE_HEIGHT/2 }, colorStops: [{ offset: 0, color: '#06402B' }, { offset: 1, color: '#06402B' }] }); canvas.setBackgroundColor(pattern, canvas.renderAll.bind(canvas)); }
         function setRuledBg() { canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas)); const svg = `<svg width="40" height="25" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="25" fill="white"/><line x1="0" y1="24" x2="40" y2="24" stroke="#94a3b8" stroke-width="1"/></svg>`; const img = new Image(); img.src = 'data:image/svg+xml;base64,' + btoa(svg); img.onload = function() { const pattern = new fabric.Pattern({ source: img, repeat: 'repeat' }); canvas.setBackgroundColor(pattern, canvas.renderAll.bind(canvas)); } }
         function setSolidBg(c) { canvas.setBackgroundImage(null,()=>canvas.renderAll()); canvas.setBackgroundColor(c,()=>canvas.renderAll()); }
-      //  function setBgImage(i) { const f=i.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{ fabric.Image.fromURL(e.target.result, img=>{ const s = Math.max(BASE_WIDTH/img.width, BASE_HEIGHT/img.height); canvas.setBackgroundImage(img, ()=>canvas.renderAll(), { scaleX:s, scaleY:s, originX:'left', originY:'top'}); })}; r.readAsDataURL(f); i.value=''; }
+        function setBgImage(i) {
+    const f = i.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = e => {
+        fabric.Image.fromURL(e.target.result, img => {
+            // Updated logic: Forces image to match BASE dimensions exactly
+            canvas.setBackgroundImage(img, () => canvas.renderAll(), {
+                scaleX: BASE_WIDTH / img.width,
+                scaleY: BASE_HEIGHT / img.height,
+                originX: 'left',
+                originY: 'top'
+            });
+        });
+    };
+    r.readAsDataURL(f);
+    i.value = '';
+}
+
+        //    function setBgImage(i) { const f=i.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{ fabric.Image.fromURL(e.target.result, img=>{ const s = Math.max(BASE_WIDTH/img.width, BASE_HEIGHT/img.height); canvas.setBackgroundImage(img, ()=>canvas.renderAll(), { scaleX:s, scaleY:s, originX:'left', originY:'top'}); })}; r.readAsDataURL(f); i.value=''; }
         function addObjImage(i) { const f=i.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{ fabric.Image.fromURL(e.target.result, img=>{ img.scaleToWidth(200); canvas.add(img); canvas.centerObject(img); })}; r.readAsDataURL(f); i.value=''; }
         function deleteObject() { const o = canvas.getActiveObject(); if(o) canvas.remove(o); }
 
@@ -775,52 +790,14 @@
         function loadProject(input) { const file = input.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const loadedSlides = JSON.parse(e.target.result); if(Array.isArray(loadedSlides)) { slides = loadedSlides; currentSlideIndex = 0; loadSlide(0); setTimeout(() => alert("Loaded!"), 200); } else { alert("Invalid file."); } } catch(err) { alert("Error reading file."); } }; reader.readAsText(file); input.value = ''; }
         function saveCurrentState() { slides[currentSlideIndex] = JSON.stringify(canvas.toJSON(['customType', 'customData', 'isInk'])); }
         function loadSlide(index) { 
-    currfunction loadSlide(index) { 
-    currentSlideIndex = index; 
-    const json = slides[index]; 
-    
-    // 1. Temporarily hide the wrapper to prevent the "jump" or "blink"
-    const wrapper = document.querySelector('.canvas-wrapper');
-    if (wrapper) wrapper.style.opacity = '0';
-
-    canvas.renderOnAddRemove = false;
-    canvas.setZoom(1); 
-    canvas.setDimensions({ width: BASE_WIDTH, height: BASE_HEIGHT }); 
-
-    if (json) { 
-        canvas.loadFromJSON(json, function() { 
-            // 2. Perform all scaling while the canvas is still invisible
-            resizeCanvas(); 
-            
-            if(isPresentationMode) { 
-                canvas.selection = false; 
-                canvas.forEachObject(o => o.selectable = false); 
-            } 
-
-            // 3. Wait for the next browser paint to show the slide
-            requestAnimationFrame(() => {
-                canvas.renderOnAddRemove = true;
-                canvas.renderAll();
-                if (wrapper) wrapper.style.opacity = '1';
-            });
-        }); 
-    } else { 
-        canvas.clear();
-        canvas.setBackgroundColor('#ffffff', () => {
-            canvas.renderOnAddRemove = true;
-            resizeCanvas();
-            canvas.renderAll();
-            if (wrapper) wrapper.style.opacity = '1';
-        }); 
-    } 
-    
-    document.getElementById('slideCounter').innerText = `${currentSlideIndex + 1} / ${slides.length}`; 
-    inkHistory = []; 
-    inkRedoStack = []; 
-}
-
-
-
+            currentSlideIndex = index; 
+            const json = slides[index]; 
+            canvas.setZoom(1); canvas.setDimensions({ width: BASE_WIDTH, height: BASE_HEIGHT }); canvas.clear(); 
+            if (json) { canvas.loadFromJSON(json, function() { resizeCanvas(); if(isPresentationMode) { canvas.selection = false; canvas.forEachObject(o => o.selectable = false); } canvas.renderAll(); }); } 
+            else { canvas.setBackgroundColor('#ffffff'); resizeCanvas(); } 
+            document.getElementById('slideCounter').innerText = `${currentSlideIndex + 1} / ${slides.length}`; 
+            inkHistory = []; inkRedoStack = []; 
+        }
         function addNewSlide() { saveCurrentState(); slides.push(null); loadSlide(slides.length - 1); }
         function nextSlide() { if (currentSlideIndex < slides.length - 1) { saveCurrentState(); loadSlide(currentSlideIndex + 1); } }
         function prevSlide() { if (currentSlideIndex > 0) { saveCurrentState(); loadSlide(currentSlideIndex - 1); } }
@@ -871,25 +848,6 @@
         if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('hidden');
         slides[0] = JSON.stringify(canvas.toJSON());
         setTimeout(resizeCanvas, 100);
-        function setBgImage(i) {
-    const f = i.files[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = e => {
-        fabric.Image.fromURL(e.target.result, img => {
-            // Updated logic: Forces image to match BASE dimensions exactly
-            canvas.setBackgroundImage(img, () => canvas.renderAll(), {
-                scaleX: BASE_WIDTH / img.width,
-                scaleY: BASE_HEIGHT / img.height,
-                originX: 'left',
-                originY: 'top'
-            });
-        });
-    };
-    r.readAsDataURL(f);
-    i.value = '';
-}
-
     </script>
 </body>
 </html>
