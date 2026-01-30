@@ -38,6 +38,10 @@
             z-index: 1000; display: flex; align-items: center; justify-content: center;
             color: #333; font-size: 1.1rem;
         }
+        .canvas-wrapper { 
+    transition: opacity 0.1s ease-in-out; 
+        }
+        
 
         .sidebar {
             width: var(--sidebar-width);
@@ -771,26 +775,34 @@
         function loadProject(input) { const file = input.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const loadedSlides = JSON.parse(e.target.result); if(Array.isArray(loadedSlides)) { slides = loadedSlides; currentSlideIndex = 0; loadSlide(0); setTimeout(() => alert("Loaded!"), 200); } else { alert("Invalid file."); } } catch(err) { alert("Error reading file."); } }; reader.readAsText(file); input.value = ''; }
         function saveCurrentState() { slides[currentSlideIndex] = JSON.stringify(canvas.toJSON(['customType', 'customData', 'isInk'])); }
         function loadSlide(index) { 
+    currfunction loadSlide(index) { 
     currentSlideIndex = index; 
     const json = slides[index]; 
     
-    // Disable automatic rendering to prevent seeing the "clear" state
+    // 1. Temporarily hide the wrapper to prevent the "jump" or "blink"
+    const wrapper = document.querySelector('.canvas-wrapper');
+    if (wrapper) wrapper.style.opacity = '0';
+
     canvas.renderOnAddRemove = false;
     canvas.setZoom(1); 
     canvas.setDimensions({ width: BASE_WIDTH, height: BASE_HEIGHT }); 
 
     if (json) { 
-        // loadFromJSON handles clearing internally. 
-        // The callback ensures we only show the result once images are ready.
         canvas.loadFromJSON(json, function() { 
+            // 2. Perform all scaling while the canvas is still invisible
             resizeCanvas(); 
+            
             if(isPresentationMode) { 
                 canvas.selection = false; 
                 canvas.forEachObject(o => o.selectable = false); 
             } 
-            // Re-enable rendering and draw everything at once
-            canvas.renderOnAddRemove = true;
-            canvas.renderAll(); 
+
+            // 3. Wait for the next browser paint to show the slide
+            requestAnimationFrame(() => {
+                canvas.renderOnAddRemove = true;
+                canvas.renderAll();
+                if (wrapper) wrapper.style.opacity = '1';
+            });
         }); 
     } else { 
         canvas.clear();
@@ -798,6 +810,7 @@
             canvas.renderOnAddRemove = true;
             resizeCanvas();
             canvas.renderAll();
+            if (wrapper) wrapper.style.opacity = '1';
         }); 
     } 
     
@@ -805,6 +818,7 @@
     inkHistory = []; 
     inkRedoStack = []; 
 }
+
 
 
         function addNewSlide() { saveCurrentState(); slides.push(null); loadSlide(slides.length - 1); }
