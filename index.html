@@ -762,7 +762,7 @@
         function setVintageBg() { canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas)); const pattern = new fabric.Gradient({ type: 'radial', coords: { r1: 0, r2: BASE_WIDTH, x1: BASE_WIDTH/2, y1: BASE_HEIGHT/2, x2: BASE_WIDTH/2, y2: BASE_HEIGHT/2 }, colorStops: [{ offset: 0, color: '#06402B' }, { offset: 1, color: '#06402B' }] }); canvas.setBackgroundColor(pattern, canvas.renderAll.bind(canvas)); }
         function setRuledBg() { canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas)); const svg = `<svg width="40" height="25" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="25" fill="white"/><line x1="0" y1="24" x2="40" y2="24" stroke="#94a3b8" stroke-width="1"/></svg>`; const img = new Image(); img.src = 'data:image/svg+xml;base64,' + btoa(svg); img.onload = function() { const pattern = new fabric.Pattern({ source: img, repeat: 'repeat' }); canvas.setBackgroundColor(pattern, canvas.renderAll.bind(canvas)); } }
         function setSolidBg(c) { canvas.setBackgroundImage(null,()=>canvas.renderAll()); canvas.setBackgroundColor(c,()=>canvas.renderAll()); }
-        function setBgImage(i) { const f=i.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{ fabric.Image.fromURL(e.target.result, img=>{ const s = Math.max(BASE_WIDTH/img.width, BASE_HEIGHT/img.height); canvas.setBackgroundImage(img, ()=>canvas.renderAll(), { scaleX:s, scaleY:s, originX:'left', originY:'top'}); })}; r.readAsDataURL(f); i.value=''; }
+      //  function setBgImage(i) { const f=i.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{ fabric.Image.fromURL(e.target.result, img=>{ const s = Math.max(BASE_WIDTH/img.width, BASE_HEIGHT/img.height); canvas.setBackgroundImage(img, ()=>canvas.renderAll(), { scaleX:s, scaleY:s, originX:'left', originY:'top'}); })}; r.readAsDataURL(f); i.value=''; }
         function addObjImage(i) { const f=i.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{ fabric.Image.fromURL(e.target.result, img=>{ img.scaleToWidth(200); canvas.add(img); canvas.centerObject(img); })}; r.readAsDataURL(f); i.value=''; }
         function deleteObject() { const o = canvas.getActiveObject(); if(o) canvas.remove(o); }
 
@@ -774,33 +774,38 @@
     currentSlideIndex = index; 
     const json = slides[index]; 
     
-    // 1. Reset zoom to 1:1 for loading
+    // Disable automatic rendering to prevent seeing the "clear" state
+    canvas.renderOnAddRemove = false;
     canvas.setZoom(1); 
     canvas.setDimensions({ width: BASE_WIDTH, height: BASE_HEIGHT }); 
 
     if (json) { 
-        // 2. Load the JSON but don't clear the canvas manually first
-        // loadFromJSON handles the clearing and rendering internally
+        // loadFromJSON handles clearing internally. 
+        // The callback ensures we only show the result once images are ready.
         canvas.loadFromJSON(json, function() { 
             resizeCanvas(); 
             if(isPresentationMode) { 
                 canvas.selection = false; 
                 canvas.forEachObject(o => o.selectable = false); 
             } 
-            // 3. Final render only once everything is placed
+            // Re-enable rendering and draw everything at once
+            canvas.renderOnAddRemove = true;
             canvas.renderAll(); 
         }); 
     } else { 
-        // For new/empty slides
         canvas.clear();
-        canvas.setBackgroundColor('#ffffff', canvas.renderAll.bind(canvas)); 
-        resizeCanvas(); 
+        canvas.setBackgroundColor('#ffffff', () => {
+            canvas.renderOnAddRemove = true;
+            resizeCanvas();
+            canvas.renderAll();
+        }); 
     } 
     
     document.getElementById('slideCounter').innerText = `${currentSlideIndex + 1} / ${slides.length}`; 
     inkHistory = []; 
     inkRedoStack = []; 
 }
+
 
         function addNewSlide() { saveCurrentState(); slides.push(null); loadSlide(slides.length - 1); }
         function nextSlide() { if (currentSlideIndex < slides.length - 1) { saveCurrentState(); loadSlide(currentSlideIndex + 1); } }
