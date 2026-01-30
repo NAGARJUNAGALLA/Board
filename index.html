@@ -829,6 +829,25 @@
         if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('hidden');
         slides[0] = JSON.stringify(canvas.toJSON());
         setTimeout(resizeCanvas, 100);
+        function setBgImage(i) {
+    const f = i.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = e => {
+        fabric.Image.fromURL(e.target.result, img => {
+            // Updated logic: Forces image to match BASE dimensions exactly
+            canvas.setBackgroundImage(img, () => canvas.renderAll(), {
+                scaleX: BASE_WIDTH / img.width,
+                scaleY: BASE_HEIGHT / img.height,
+                originX: 'left',
+                originY: 'top'
+            });
+        });
+    };
+    r.readAsDataURL(f);
+    i.value = '';
+}
+
     </script>
 </body>
 </html>
