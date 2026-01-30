@@ -550,51 +550,72 @@
         }
 
         async function renderLine(text, fontSize, width, style) {
-            const font = style.font || 'Segoe UI';
-            const color = style.color || '#333';
-            const align = style.align || 'left';
+    const font = style.font || 'Segoe UI';
+    const color = style.color || '#333';
+    const align = style.align || 'left';
 
-            const hasMath = text.includes('$');
-            if (hasMath) {
-                let latexStr = text;
-                const parts = text.split('$');
-                if(parts.length > 1) {
-                    latexStr = "";
-                    parts.forEach((part, idx) => {
-                        if(idx % 2 === 0) { 
-                            if(part.trim() !== "") {
-                                const escaped = part.replace(/([&%#_{}])/g, '\\$1');
-                                latexStr += `\\text{${escaped}} `; 
-                            }
-                        } 
-                        else { latexStr += `${part} `; }
-                    });
-                }
-                try {
-                    const svg = await MathJax.tex2svgPromise(latexStr);
-                    const svgStr = svg.querySelector('svg').outerHTML;
-                    return new Promise((resolve) => {
-                        fabric.loadSVGFromString(svgStr, (objects, options) => {
-                            const obj = fabric.util.groupSVGElements(objects, options);
-                            obj.getObjects().forEach(o => o.set('fill', color));
-                            const desiredH = fontSize * 1.5; 
-                            const scale = desiredH / obj.height;
-                            obj.scale(scale);
-                            if (obj.width * obj.scaleX > width) obj.scaleToWidth(width);
-                            resolve(obj);
-                        });
-                    });
-                } catch(e) {
-                    return new fabric.Textbox(text + " (Error)", { fontSize: fontSize, width: width, fill: 'red' });
-                }
-            } else {
-                return new fabric.Textbox(text, { 
-                    fontSize: fontSize, width: width, 
-                    splitByGrapheme: false, 
-                    fontFamily: font, fill: color, textAlign: align
-                });
-            }
+    const hasMath = text.includes('$');
+    if (hasMath) {
+        let latexStr = text;
+        const parts = text.split('$');
+        if(parts.length > 1) {
+            latexStr = "";
+            parts.forEach((part, idx) => {
+                if(idx % 2 === 0) { 
+                    if(part.trim() !== "") {
+                        // Escape special characters for LaTeX text block
+                        const escaped = part.replace(/([&%#_{}])/g, '\\$1');
+                        latexStr += `\\text{${escaped}} `; 
+                    }
+                } 
+                else { latexStr += `${part} `; }
+            });
         }
+        try {
+            // Using MathJax to render the combined line
+            const svg = await MathJax.tex2svgPromise(latexStr);
+            const svgStr = svg.querySelector('svg').outerHTML;
+            return new Promise((resolve) => {
+                fabric.loadSVGFromString(svgStr, (objects, options) => {
+                    const obj = fabric.util.groupSVGElements(objects, options);
+                    obj.getObjects().forEach(o => o.set('fill', color));
+                    
+                    // Scale math to match font size
+                    const desiredH = fontSize * 1.5; 
+                    const scale = desiredH / obj.height;
+                    obj.scale(scale);
+                    
+                    // WRAP LOGIC: If the math line is wider than the container, shrink to fit
+                    // Note: True text-wrapping with mixed MathJax is complex, 
+                    // this ensures the line is never "cut off" by scaling it down.
+                    if (obj.width * obj.scaleX > width) {
+                        obj.scaleToWidth(width);
+                    }
+                    resolve(obj);
+                });
+            });
+        } catch(e) {
+            return new fabric.Textbox(text + " (Error)", { 
+                fontSize: fontSize, 
+                width: width, 
+                fill: 'red',
+                fontFamily: font 
+            });
+        }
+    } else {
+        // STANDARD TEXT WRAP
+        return new fabric.Textbox(text, { 
+            fontSize: fontSize, 
+            width: width,              // Crucial for wrapping
+            splitByGrapheme: true,     // Better for Telugu and long strings
+            fontFamily: font, 
+            fill: color, 
+            textAlign: align,
+            breakWords: true           // Forces break if a single word is too long
+        });
+    }
+}
+
 
         async function renderBlock(text, fontSize, width, style) {
             const lines = splitTextSmart(text);
