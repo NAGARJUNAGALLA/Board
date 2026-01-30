@@ -72,6 +72,7 @@
         .btn:active { transform: scale(0.98); }
         .btn.primary { background-color: var(--primary); color: white; border: none; }
         .btn.danger { color: #ef4444; border-color: #fee2e2; }
+        .btn.success { background-color: #10b981; color: white; border: none; }
 
         .style-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.85rem; color: #555; }
         input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; background: none; padding: 0; }
@@ -191,8 +192,11 @@
         <div class="tool-group">
             <h3>Insert & Shapes</h3>
             <button class="btn" onclick="addText()">🔡 Simple Box</button>
-            <button class="btn" onclick="document.getElementById('objImgInput').click()">🖼️ Image</button>
+            <button class="btn success" onclick="document.getElementById('bulkImgInput').click()">📚 Images to New Slides</button>
+            <button class="btn" onclick="document.getElementById('objImgInput').click()">🖼️ Image (Single)</button>
+            
             <input type="file" id="objImgInput" accept="image/*" onchange="addObjImage(this)">
+            <input type="file" id="bulkImgInput" accept="image/*" multiple onchange="addBulkImages(this)">
             
             <div class="shape-grid" style="margin-top:5px;">
                 <button class="btn shape-btn" onclick="addRect()">⬛</button>
@@ -306,6 +310,38 @@
         canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
         canvas.freeDrawingBrush.width = 3;
         canvas.freeDrawingBrush.color = "#ff0000";
+
+        // --- BULK IMAGE LOGIC ---
+        async function addBulkImages(input) {
+            const files = Array.from(input.files);
+            if(files.length === 0) return;
+
+            saveCurrentState();
+            
+            for (const file of files) {
+                const dataUrl = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+
+                // Helper to create a slide with an image
+                const tempCanvas = new fabric.Canvas(null, { width: BASE_WIDTH, height: BASE_HEIGHT });
+                await new Promise(resolve => {
+                    fabric.Image.fromURL(dataUrl, img => {
+                        img.scaleToWidth(600);
+                        tempCanvas.add(img);
+                        tempCanvas.centerObject(img);
+                        tempCanvas.renderAll();
+                        slides.push(JSON.stringify(tempCanvas.toJSON(['customType', 'customData', 'isInk'])));
+                        resolve();
+                    });
+                });
+            }
+
+            input.value = '';
+            loadSlide(slides.length - 1);
+        }
 
         // --- EDIT LOGIC ---
         
