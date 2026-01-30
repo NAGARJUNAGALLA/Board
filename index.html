@@ -771,14 +771,37 @@
         function loadProject(input) { const file = input.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const loadedSlides = JSON.parse(e.target.result); if(Array.isArray(loadedSlides)) { slides = loadedSlides; currentSlideIndex = 0; loadSlide(0); setTimeout(() => alert("Loaded!"), 200); } else { alert("Invalid file."); } } catch(err) { alert("Error reading file."); } }; reader.readAsText(file); input.value = ''; }
         function saveCurrentState() { slides[currentSlideIndex] = JSON.stringify(canvas.toJSON(['customType', 'customData', 'isInk'])); }
         function loadSlide(index) { 
-            currentSlideIndex = index; 
-            const json = slides[index]; 
-            canvas.setZoom(1); canvas.setDimensions({ width: BASE_WIDTH, height: BASE_HEIGHT }); canvas.clear(); 
-            if (json) { canvas.loadFromJSON(json, function() { resizeCanvas(); if(isPresentationMode) { canvas.selection = false; canvas.forEachObject(o => o.selectable = false); } canvas.renderAll(); }); } 
-            else { canvas.setBackgroundColor('#ffffff'); resizeCanvas(); } 
-            document.getElementById('slideCounter').innerText = `${currentSlideIndex + 1} / ${slides.length}`; 
-            inkHistory = []; inkRedoStack = []; 
-        }
+    currentSlideIndex = index; 
+    const json = slides[index]; 
+    
+    // 1. Reset zoom to 1:1 for loading
+    canvas.setZoom(1); 
+    canvas.setDimensions({ width: BASE_WIDTH, height: BASE_HEIGHT }); 
+
+    if (json) { 
+        // 2. Load the JSON but don't clear the canvas manually first
+        // loadFromJSON handles the clearing and rendering internally
+        canvas.loadFromJSON(json, function() { 
+            resizeCanvas(); 
+            if(isPresentationMode) { 
+                canvas.selection = false; 
+                canvas.forEachObject(o => o.selectable = false); 
+            } 
+            // 3. Final render only once everything is placed
+            canvas.renderAll(); 
+        }); 
+    } else { 
+        // For new/empty slides
+        canvas.clear();
+        canvas.setBackgroundColor('#ffffff', canvas.renderAll.bind(canvas)); 
+        resizeCanvas(); 
+    } 
+    
+    document.getElementById('slideCounter').innerText = `${currentSlideIndex + 1} / ${slides.length}`; 
+    inkHistory = []; 
+    inkRedoStack = []; 
+}
+
         function addNewSlide() { saveCurrentState(); slides.push(null); loadSlide(slides.length - 1); }
         function nextSlide() { if (currentSlideIndex < slides.length - 1) { saveCurrentState(); loadSlide(currentSlideIndex + 1); } }
         function prevSlide() { if (currentSlideIndex > 0) { saveCurrentState(); loadSlide(currentSlideIndex - 1); } }
