@@ -376,13 +376,31 @@
             closeModal();
         }
 
+        // --- MATH RENDER FIX FOR TELUGU ---
         async function renderLine(text, fontSize, width, style) {
             const hasMath = text.includes('$');
             if (hasMath) {
-                let latexStr = text; const parts = text.split('$');
-                if(parts.length > 1) { latexStr = ""; parts.forEach((p, idx) => { if(idx%2===0) { if(p.trim()) latexStr += `\\text{${p.replace(/([&%#_{}])/g, '\\$1')}} `; } else latexStr += p + " "; }); }
+                let latexStr = ""; 
+                const parts = text.split('$');
+                parts.forEach((p, idx) => {
+                    if (idx % 2 === 0) {
+                        // Plain text parts (Support Telugu)
+                        if (p.trim()) {
+                            const escaped = p.replace(/([&%#_{}])/g, '\\$1');
+                            latexStr += `\\text{${escaped}} `;
+                        }
+                    } else {
+                        // Math parts
+                        latexStr += p + " ";
+                    }
+                });
                 const svg = await MathJax.tex2svgPromise(latexStr);
-                return new Promise(r => fabric.loadSVGFromString(svg.querySelector('svg').outerHTML, (os, op) => { const g = fabric.util.groupSVGElements(os, op); g.getObjects().forEach(o=>o.set('fill', style.color)); g.scale((fontSize*1.5)/g.height); r(g); }));
+                return new Promise(r => fabric.loadSVGFromString(svg.querySelector('svg').outerHTML, (os, op) => { 
+                    const g = fabric.util.groupSVGElements(os, op); 
+                    g.getObjects().forEach(o=>o.set('fill', style.color)); 
+                    g.scale((fontSize*1.5)/g.height); 
+                    r(g); 
+                }));
             } else return new fabric.Textbox(text, { fontSize, width, fontFamily: style.font, fill: style.color, textAlign: style.align });
         }
 
@@ -396,7 +414,18 @@
         async function drawMCQ(d) { let t=50, l=50; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} const q = await renderBlock(d.q, d.size||24, 600, d); const obs = [q]; let y = q.height*q.scaleY+25; for(let i=0; i<4; i++){ obs.push(new fabric.Circle({radius:8, fill:'transparent', stroke:d.color, strokeWidth:2, top:y+5, left:0})); const o = await renderBlock(d.o[i], (d.size||24)*0.8, 550, d); o.set({top:y, left:30}); obs.push(o); y+= Math.max(o.height*o.scaleY, 30)+15; } const g = new fabric.Group(obs, {top:t, left:l, customType:'mcq', customData:d}); finishObject(g); }
         async function drawMatching(d) { let t=50, l=50; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} const obs = []; let y = 0; for(let i=0; i<4; i++){ const lO = await renderBlock(d.pairs[i][0], (d.size||24)*0.8, 150, d), rO = await renderBlock(d.pairs[i][1], (d.size||24)*0.8, 150, d), h = Math.max(lO.height*lO.scaleY, rO.height*rO.scaleY, 30); lO.set({top:y+(h-lO.height*lO.scaleY)/2, left:0}); rO.set({top:y+(h-rO.height*rO.scaleY)/2, left:270}); obs.push(lO, new fabric.Circle({radius:4, fill:d.color, top:y+h/2-2, left:160}), new fabric.Circle({radius:4, fill:d.color, top:y+h/2-2, left:250}), rO); y += h+20; } const g = new fabric.Group(obs, {top:t, left:l, customType:'matching', customData:d}); finishObject(g); }
         async function drawTable(d) { let t=50, l=50; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} const obs = [], rowsH = []; let idx = 0; for(let r=0; r<d.rows; r++){ let maxH = 50; for(let c=0; c<d.cols; c++){ const o = await renderBlock(d.cells[idx++]||" ", (d.size||24)*0.75, 140, d); if(o.height*o.scaleY+20 > maxH) maxH = o.height*o.scaleY+20; rowsH[r]=maxH; } } let currY = 0; idx=0; for(let r=0; r<d.rows; r++){ for(let c=0; c<d.cols; c++){ const rect = new fabric.Rect({width:150, height:rowsH[r], fill:'transparent', stroke:d.color, left:c*150, top:currY}); const o = await renderBlock(d.cells[idx++]||" ", (d.size||24)*0.75, 140, d); o.set({top:currY+(rowsH[r]-o.height*o.scaleY)/2, left:c*150+5}); obs.push(rect, o); } currY += rowsH[r]; } const g = new fabric.Group(obs, {top:t, left:l, customType:'table', customData:d}); finishObject(g); }
-        async function drawMath(latex, color) { let t=100, l=100; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} const svg = await MathJax.tex2svgPromise(latex); fabric.loadSVGFromString(svg.querySelector('svg').outerHTML, (os, op) => { const g = fabric.util.groupSVGElements(os, op); g.getObjects().forEach(o=>o.set('fill', color)); g.scale(30/g.height); g.set({left:l, top:t, customType:'math', customData:{latex, color}}); finishObject(g); }); }
+        async function drawMath(latex, color) { 
+            let t=100, l=100; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} 
+            // Wrap in \text if not using $ but calling via math mode directly
+            const svg = await MathJax.tex2svgPromise(latex); 
+            fabric.loadSVGFromString(svg.querySelector('svg').outerHTML, (os, op) => { 
+                const g = fabric.util.groupSVGElements(os, op); 
+                g.getObjects().forEach(o=>o.set('fill', color)); 
+                g.scale(30/g.height); 
+                g.set({left:l, top:t, customType:'math', customData:{latex, color}}); 
+                finishObject(g); 
+            }); 
+        }
 
         function finishObject(g) { canvas.add(g); canvas.centerObject(g); canvas.setActiveObject(g); canvas.requestRenderAll(); }
 
@@ -464,21 +493,18 @@
             }
         }
 
-        // --- RECORDING (FIXED FOR MP4) ---
+        // --- RECORDING ---
         async function toggleRecording() {
             const btn = document.getElementById('btnRec');
             if (!isRecording) {
                 try {
                     const stream = document.querySelector('canvas').captureStream(30);
-                    
-                    // Try to get audio stream, but proceed without if denied
                     let audioStream;
                     try {
                         audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                         audioStream.getAudioTracks().forEach(track => stream.addTrack(track));
-                    } catch(e) { console.warn("Audio denied, recording video only."); }
+                    } catch(e) { console.warn("Audio denied"); }
 
-                    // MIME Type priority: MP4 -> WebM
                     let options = { mimeType: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"' };
                     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
                         options = { mimeType: 'video/webm; codecs=vp9' };
@@ -489,12 +515,12 @@
                     mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
                     
                     mediaRecorder.onstop = () => {
-                        const extension = options.mimeType.includes('mp4') ? 'mp4' : 'webm';
+                        const ext = options.mimeType.includes('mp4') ? 'mp4' : 'webm';
                         const blob = new Blob(recordedChunks, { type: options.mimeType });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = `recording_${new Date().getTime()}.${extension}`;
+                        a.download = `recording_${new Date().getTime()}.${ext}`;
                         a.click();
                         URL.revokeObjectURL(url);
                     };
@@ -503,7 +529,6 @@
                     isRecording = true;
                     btn.classList.add('recording');
                 } catch (err) {
-                    alert("Recording failed. Please ensure browser permissions are granted.");
                     console.error(err);
                 }
             } else {
@@ -529,11 +554,9 @@
             document.body.classList.add('presentation-mode');
             canvas.selection = false;
             canvas.forEachObject(o => o.selectable = false);
-            
             const elem = document.documentElement;
             const requestMethod = elem.requestFullscreen || elem.webkitRequestFullScreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
             if (requestMethod) requestMethod.call(elem).catch(err => console.warn(err));
-
             document.getElementById('presentationBar').style.display = 'flex';
             document.getElementById('presentToggle').classList.add('active');
             resizeCanvas();
@@ -544,12 +567,10 @@
             document.body.classList.remove('presentation-mode');
             canvas.selection = true;
             canvas.forEachObject(o => o.selectable = true);
-            
             if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
                 const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
                 if (exitMethod) exitMethod.call(document);
             }
-
             document.getElementById('presentationBar').style.display = 'none';
             document.getElementById('slideNavPanel').style.display = 'none';
             resizeCanvas();
