@@ -73,6 +73,14 @@
         .btn.primary { background-color: var(--primary); color: white; border: none; }
         .btn.danger { color: #ef4444; border-color: #fee2e2; }
 
+        .style-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.85rem; color: #555; }
+        input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; background: none; padding: 0; }
+        input[type="file"] { display: none; }
+
+        .shape-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .shape-btn { font-size: 1.2rem; padding: 5px; }
+
+        /* --- Workspace --- */
         .workspace {
             flex-grow: 1; display: grid; grid-template-rows: 1fr var(--bottom-bar-height);
             background-color: #e5e7eb; position: relative; height: 100%; overflow: hidden;
@@ -93,48 +101,83 @@
         .slide-counter { font-weight: 600; min-width: 50px; text-align: center; font-size: 0.9rem; }
         .bottom-bar .btn { width: auto; padding: 10px 16px; margin: 0; font-size: 0.9rem; }
 
-        /* --- Presentation UI --- */
+        /* --- Presentation Bar --- */
         .presentation-bar {
             display: none; position: fixed; top: 50%; right: 15px; transform: translateY(-50%);
             background: rgba(255, 255, 255, 0.9); padding: 15px 8px; border-radius: 30px;
             z-index: 99999; flex-direction: column; align-items: center; gap: 8px;
-            box-shadow: -5px 0 20px rgba(0,0,0,0.3); max-height: 85vh; overflow-y: auto; backdrop-filter: blur(5px);
+            box-shadow: -5px 0 20px rgba(0,0,0,0.3); max-height: 85vh; overflow-y: auto; overflow-x: hidden;
+            backdrop-filter: blur(5px); scrollbar-width: none; 
         }
-        .presentation-bar .btn { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
-        
+        .presentation-bar .btn {
+            background: #f3f4f6; color: #333; border: 1px solid #ddd; margin: 0; padding: 0;
+            width: 36px; height: 36px; font-size: 0.85rem; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .presentation-bar .btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn.recording { background-color: #ef4444; color: white; border-color: #ef4444; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        .pen-slider { width: 40px; height: 6px; flex-shrink: 0; margin: 5px 0; }
+        .divider { width: 80%; height: 1px; background: #ccc; margin: 4px 0; flex-shrink: 0; }
+
+        /* --- Visual Slide Navigator --- */
         .slide-nav-panel {
             display: none; position: fixed; left: 0; top: 0; height: 100%; width: 160px;
             background: rgba(15, 23, 42, 0.9); z-index: 99998; flex-direction: column; 
             padding: 20px 10px; gap: 15px; overflow-y: auto; backdrop-filter: blur(10px);
             border-right: 1px solid rgba(255,255,255,0.1);
         }
-        .nav-slide-btn { width: 100%; position: relative; cursor: pointer; transition: transform 0.2s; }
-        .nav-slide-img { width: 100%; aspect-ratio: 16/9; background: #fff; border-radius: 6px; border: 2px solid transparent; object-fit: contain; }
+        .nav-slide-btn {
+            width: 100%; position: relative; cursor: pointer; transition: transform 0.2s;
+        }
+        .nav-slide-btn:hover { transform: scale(1.03); }
+        .nav-slide-img {
+            width: 100%; aspect-ratio: 16/9; background: #fff; border-radius: 6px;
+            border: 2px solid transparent; object-fit: contain; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
         .nav-slide-btn.active .nav-slide-img { border-color: var(--primary); }
-        .nav-slide-num { position: absolute; bottom: 5px; right: 5px; background: var(--primary); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+        .nav-slide-num {
+            position: absolute; bottom: 5px; right: 5px; background: var(--primary);
+            color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold;
+        }
 
         .present-toggle {
             display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             width: 40px; height: 40px; background: rgba(255,255,255,0.3); border-radius: 50%;
             border: 2px solid rgba(255,255,255,0.6); color: white; font-size: 1.2rem;
-            cursor: pointer; z-index: 100000; backdrop-filter: blur(4px); align-items: center; justify-content: center;
+            cursor: pointer; z-index: 100000; backdrop-filter: blur(4px);
+            align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.2s;
         }
+        .present-toggle.active { background: var(--primary); border-color: var(--primary); color: white; opacity: 1; }
 
         /* --- MODAL --- */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 100000; align-items: center; justify-content: center;
         }
-        .modal-box { background: white; width: 90%; max-width: 500px; padding: 20px; border-radius: 12px; max-height: 90vh; display: flex; flex-direction: column; }
-        .modal-body { overflow-y: auto; flex: 1; }
-        .modal-body textarea, .modal-body input, .modal-body select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; }
-        .style-toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .modal-box {
+            background: white; width: 90%; max-width: 500px; padding: 20px;
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-height: 90vh; display: flex; flex-direction: column;
+        }
+        .modal-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--primary); }
+        .modal-body { overflow-y: auto; padding-right: 5px; flex: 1; }
+        
+        .modal-body input, .modal-body textarea, .modal-body select { 
+            width: 100%; padding: 10px; margin-bottom: 10px; 
+            border: 1px solid #ddd; border-radius: 6px; 
+            font-family: inherit; font-size: 0.95rem; resize: vertical; 
+        }
+        .modal-body textarea { min-height: 50px; }
+        .modal-body label { font-size: 0.85rem; color: #555; display: block; margin-bottom: 3px; font-weight: 600; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
 
+        body.presentation-mode { background-color: #000; }
         body.presentation-mode .sidebar, body.presentation-mode .bottom-bar, body.presentation-mode .toggle-btn { display: none !important; }
         body.presentation-mode .workspace { background-color: #000; grid-template-rows: 1fr; }
+        body.presentation-mode .canvas-area { padding: 0; }
         body.presentation-mode .present-toggle { display: flex; }
-        .btn.recording { background-color: #ef4444; color: white; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
         #tempCanvas { display: none; }
     </style>
@@ -145,6 +188,7 @@
 
     <div class="sidebar" id="sidebar">
         <div class="brand">SlideGen</div>
+
         <div class="tool-group">
             <h3>Education</h3>
             <button class="btn" onclick="openConfig('eduText')">📝 Edu Text</button>
@@ -153,33 +197,51 @@
             <button class="btn" onclick="openConfig('matching')">⇄ Matching</button>
             <button class="btn" onclick="openConfig('math')">𝝅 Formula</button>
         </div>
+
         <div class="tool-group">
-            <h3>Insert</h3>
-            <button class="btn" onclick="addText()">🔡 Text Box</button>
+            <h3>Insert & Shapes</h3>
+            <button class="btn" onclick="addText()">🔡 Simple Box</button>
             <button class="btn" onclick="document.getElementById('objImgInput').click()">🖼️ Image</button>
             <input type="file" id="objImgInput" accept="image/*" onchange="addObjImage(this)">
+            
+            <div class="shape-grid" style="margin-top:5px;">
+                <button class="btn shape-btn" onclick="addRect()">⬛</button>
+                <button class="btn shape-btn" onclick="addCircle()">⚪</button>
+                <button class="btn shape-btn" onclick="addTriangle()">🔺</button>
+            </div>
         </div>
+
         <div class="tool-group">
             <h3>Background</h3>
-            <button class="btn" onclick="setVintageBg()" style="background:#06402B; color:white;">📜 Vintage</button>
-            <button class="btn" onclick="setRuledBg()">📝 Ruled</button>
-            <input type="color" onchange="setSolidBg(this.value)" style="width:100%; height:40px;">
+            <div style="display:flex; gap:5px; margin-bottom:8px;">
+                <button class="btn" onclick="setVintageBg()" style="background:#06402B; color:#FFFFFF; flex:1;">📜 Vintage</button>
+                <button class="btn" onclick="setRuledBg()" style="background:#fff; color:#333; border:1px solid #ccc; flex:1;">📝 Ruled</button>
+            </div>
+            <div class="style-row">
+                <input type="color" onchange="setSolidBg(this.value)" title="Solid Color">
+                <button class="btn" style="width:auto; margin:0; flex:1;" onclick="document.getElementById('bgImgInput').click()">🌄 BG Image</button>
+            </div>
+            <input type="file" id="bgImgInput" accept="image/*" onchange="setBgImage(this)">
         </div>
+
         <div class="tool-group">
             <h3>Project</h3>
-            <button class="btn primary" onclick="startPresentation()">▶️ Present</button>
+            <button class="btn primary" onclick="startPresentation()">▶️ <b>Present</b></button>
             <button class="btn" onclick="editSelectedObject()">✏️ Edit Item</button>
             <button class="btn" onclick="saveProject()">💾 Save</button>
-            <button class="btn danger" onclick="deleteObject()">🗑️ Delete</button>
+            <button class="btn" onclick="document.getElementById('loadJsonInput').click()">📂 Load</button>
+            <input type="file" id="loadJsonInput" onchange="loadProject(this)">
+            <button class="btn danger" onclick="deleteObject()">🗑️ Delete Item</button>
         </div>
     </div>
 
-    <div class="workspace">
+    <div class="workspace" id="workspaceContainer">
         <div class="canvas-area" id="canvasArea">
             <div class="canvas-wrapper">
                 <canvas id="slideCanvas"></canvas>
             </div>
         </div>
+
         <div class="bottom-bar">
             <button class="btn" onclick="prevSlide()">❮</button>
             <span class="slide-counter" id="slideCounter">1 / 1</span>
@@ -188,29 +250,37 @@
         </div>
     </div>
 
-    <button class="present-toggle" id="presentToggle" onclick="togglePresentationBar()">🛠</button>
+    <button class="present-toggle" id="presentToggle" onclick="togglePresentationBar()" title="Show/Hide Toolbar">🛠</button>
+
     <div class="slide-nav-panel" id="slideNavPanel"></div>
 
     <div class="presentation-bar" id="presentationBar">
         <button class="btn" onclick="prevSlide()">▲</button>
         <button class="btn" onclick="nextSlide()">▼</button>
-        <button class="btn" onclick="toggleNavSidebar()">🖼️</button>
-        <div style="height:1px; background:#ccc; width:80%;"></div>
-        <button class="btn" id="btnRec" onclick="toggleRecording()">🔴</button>
-        <div style="height:1px; background:#ccc; width:80%;"></div>
-        <button class="btn" onclick="setPenMode()">🖊️</button>
-        <button class="btn" onclick="setEraserMode()">🧹</button>
-        <input type="color" id="presentPenColor" value="#ff0000" onchange="changePenColor(this.value)">
-        <button class="btn" onclick="undoInk()">↩️</button>
-        <button class="btn danger" onclick="endPresentation()">❌</button>
+        <button class="btn" onclick="toggleNavSidebar()" title="Slide Previews">🖼️</button>
+        <div class="divider"></div>
+        <button class="btn" id="btnRec" onclick="toggleRecording()" title="Record">🔴</button>
+        <div class="divider"></div>
+        <button class="btn" id="btnNormal" onclick="setPenMode('normal')" title="Pen">🖊️</button>
+        <button class="btn" id="btnCursive" onclick="setPenMode('cursive')" title="Cursive" style="font-family:'Pacifico'; font-size:0.7rem;">f</button>
+        <button class="btn" id="btnEraser" onclick="setEraserMode()" title="Eraser">🧹</button>
+        <input type="range" class="pen-slider" min="1" max="30" value="3" oninput="updatePenSize(this.value)" title="Size">
+        <input type="color" id="presentPenColor" value="#ff0000" onchange="changePenColor(this.value)" title="Color">
+        <div class="divider"></div>
+        <button class="btn" onclick="undoInk()" title="Undo">↩️</button>
+        <button class="btn" onclick="redoInk()" title="Redo">↪️</button>
+        <div class="divider"></div>
+        <button class="btn" onclick="togglePresentationBar()" title="Hide">➡</button>
+        <button class="btn danger" onclick="endPresentation()" title="Exit">❌</button>
     </div>
 
     <div id="configModal" class="modal-overlay">
         <div class="modal-box">
+            <div class="modal-title" id="modalTitle">Configuration</div>
             <div class="modal-body" id="modalBody"></div>
-            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                <button class="btn" onclick="closeModal()">Cancel</button>
-                <button class="btn primary" onclick="saveConfig()">Save</button>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()" style="width:auto;">Cancel</button>
+                <button class="btn primary" onclick="saveConfig()" style="width:auto;">Save</button>
             </div>
         </div>
     </div>
@@ -218,173 +288,278 @@
     <canvas id="tempCanvas" width="800" height="450"></canvas>
 
     <script>
-        const BASE_WIDTH = 800, BASE_HEIGHT = 450;
-        let isPresentationMode = false, isEraserActive = false, inkHistory = [], recordedChunks = [], mediaRecorder, isRecording = false;
-        let currentConfigType = null, activeEditGroup = null, slides = [], currentSlideIndex = 0;
-        const availableFonts = ['Segoe UI', 'NTR', 'Gidugu', 'Ramabhadra', 'Arial', 'Roboto', 'Pacifico'];
+        const BASE_WIDTH = 800;
+        const BASE_HEIGHT = 450;
+        let isPresentationMode = false;
+        let isEraserActive = false;
+        let inkHistory = [];
+        let inkRedoStack = [];
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecording = false;
+        let currentConfigType = null;
+        let activeEditGroup = null;
+        let slides = []; 
+        let currentSlideIndex = 0;
+        const availableFonts = ['Segoe UI', 'Ntr','Arial', 'Times New Roman', 'Pacifico', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Oswald', 'Lobster', 'Gidugu', 'Ramabhadra'];
 
-        const canvas = new fabric.Canvas('slideCanvas', { width: BASE_WIDTH, height: BASE_HEIGHT, backgroundColor: '#ffffff' });
+        const canvas = new fabric.Canvas('slideCanvas', {
+            width: BASE_WIDTH,
+            height: BASE_HEIGHT,
+            backgroundColor: '#ffffff',
+            selection: true
+        });
+
         const offCanvas = new fabric.StaticCanvas('tempCanvas');
 
-        // --- MATH + TELUGU LOGIC FIX ---
+        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+        canvas.freeDrawingBrush.width = 3;
+        canvas.freeDrawingBrush.color = "#ff0000";
+
+        // --- EDIT LOGIC ---
+        function editSelectedObject() {
+            let target = canvas.getActiveObject();
+            if (!target) { alert("Please select an item to edit."); return; }
+            while (target && !target.customType && target.group) { target = target.group; }
+            if (target && target.customType) { openConfig(target.customType, target); } 
+        }
+
+        canvas.on('mouse:dblclick', (e) => {
+            let target = e.target; if (!target) return;
+            while (target && !target.customType && target.group) { target = target.group; }
+            if (target && target.customType) openConfig(target.customType, target);
+        });
+
+        function openConfig(type, existingGroup = null) {
+            currentConfigType = type; activeEditGroup = existingGroup;
+            const modal = document.getElementById('configModal'), body = document.getElementById('modalBody');
+            modal.style.display = 'flex'; body.innerHTML = ''; 
+            let data = existingGroup ? existingGroup.customData : null;
+            const defFont = data?.font || 'Segoe UI', defColor = data?.color || '#333333', defSize = data?.size || 24;
+
+            let styleHtml = `<div class="style-toolbar">
+                <select id="inpFont">${availableFonts.map(f => `<option value="${f}" ${f===defFont?'selected':''}>${f}</option>`).join('')}</select>
+                <input type="color" id="inpColor" value="${defColor}">
+                <select id="inpAlign">
+                    <option value="left" ${data?.align==='left'?'selected':''}>Left</option>
+                    <option value="center" ${data?.align==='center'?'selected':''}>Center</option>
+                </select>
+                <input type="number" id="inpSize" value="${defSize}" style="width:60px;">
+            </div>`;
+            
+            if (type !== 'math') body.innerHTML = styleHtml;
+            else body.innerHTML = `<div class="style-toolbar"><input type="color" id="inpColor" value="${defColor}"></div>`;
+
+            if (type === 'eduText') body.innerHTML += `<textarea id="inpText" rows="6">${data?.text || ''}</textarea>`;
+            else if (type === 'mcq') body.innerHTML += `<textarea id="inpQ" rows="2">${data?.q || ''}</textarea><textarea id="inpA">${data?.o[0] || ''}</textarea><textarea id="inpB">${data?.o[1] || ''}</textarea><textarea id="inpC">${data?.o[2] || ''}</textarea><textarea id="inpD">${data?.o[3] || ''}</textarea>`;
+            else if (type === 'matching') {
+                let h = ''; for(let i=0; i<4; i++) h += `<div style="display:flex; gap:5px;"><textarea id="mL${i}">${data?.pairs[i][0] || ''}</textarea><textarea id="mR${i}">${data?.pairs[i][1] || ''}</textarea></div>`;
+                body.innerHTML += h;
+            } else if (type === 'table') {
+                if (existingGroup) {
+                    let g = `<div style="display:grid; grid-template-columns: repeat(${data.cols}, 1fr);">`;
+                    data.cells.forEach(c => g += `<textarea class="tbl-cell-inp">${c}</textarea>`);
+                    body.innerHTML += g + `</div><input type="hidden" id="inpRows" value="${data.rows}"><input type="hidden" id="inpCols" value="${data.cols}">`;
+                } else body.innerHTML += `<input type="number" id="inpRows" value="3"><input type="number" id="inpCols" value="3">`;
+            } else if (type === 'math') body.innerHTML += `<textarea id="inpMath" rows="3">${data?.latex || ''}</textarea>`;
+        }
+
+        function closeModal() { document.getElementById('configModal').style.display = 'none'; }
+
+        async function saveConfig() {
+            let newData = { font: document.getElementById('inpFont')?.value, color: document.getElementById('inpColor')?.value, align: document.getElementById('inpAlign')?.value, size: parseInt(document.getElementById('inpSize')?.value) };
+            if (currentConfigType === 'eduText') { newData.text = document.getElementById('inpText').value; await drawEduText(newData); }
+            else if (currentConfigType === 'mcq') { newData.q = document.getElementById('inpQ').value; newData.o = [document.getElementById('inpA').value, document.getElementById('inpB').value, document.getElementById('inpC').value, document.getElementById('inpD').value]; await drawMCQ(newData); }
+            else if (currentConfigType === 'matching') { newData.pairs = []; for(let i=0; i<4; i++) newData.pairs.push([document.getElementById('mL'+i).value, document.getElementById('mR'+i).value]); await drawMatching(newData); }
+            else if (currentConfigType === 'table') { newData.rows = parseInt(document.getElementById('inpRows').value); newData.cols = parseInt(document.getElementById('inpCols').value); const ins = document.querySelectorAll('.tbl-cell-inp'); newData.cells = ins.length ? Array.from(ins).map(i=>i.value) : new Array(newData.rows*newData.cols).fill(" "); await drawTable(newData); }
+            else if (currentConfigType === 'math') await drawMath(document.getElementById('inpMath').value, newData.color);
+            closeModal();
+        }
+
         async function renderLine(text, fontSize, width, style) {
             const hasMath = text.includes('$');
-            const color = style.color || '#333';
-            
             if (hasMath) {
-                let latexStr = "";
-                const parts = text.split('$');
-                
-                parts.forEach((part, idx) => {
-                    if (idx % 2 === 0) {
-                        if (part.trim()) {
-                            // Detect Telugu or non-ASCII characters and wrap them in \text{}
-                            // This ensures MathJax renders them using the DOM font (Gidugu/NTR)
-                            const escaped = part.replace(/([&%#_{}])/g, '\\$1');
-                            latexStr += `\\text{${escaped}} `;
-                        }
-                    } else {
-                        latexStr += ` ${part} `;
-                    }
-                });
-
-                try {
-                    const svg = await MathJax.tex2svgPromise(latexStr);
-                    const svgMarkup = svg.querySelector('svg').outerHTML;
-                    return new Promise(resolve => {
-                        fabric.loadSVGFromString(svgMarkup, (objects, options) => {
-                            const g = fabric.util.groupSVGElements(objects, options);
-                            g.getObjects().forEach(o => o.set('fill', color));
-                            const scale = (fontSize * 1.5) / g.height;
-                            g.scale(scale);
-                            if (g.width * g.scaleX > width) g.scaleToWidth(width);
-                            resolve(g);
-                        });
-                    });
-                } catch(e) { return new fabric.Textbox(text, { fontSize, width, fill: 'red' }); }
-            } else {
-                return new fabric.Textbox(text, { fontSize, width, fontFamily: style.font, fill: color, textAlign: style.align });
-            }
+                let latexStr = text; const parts = text.split('$');
+                if(parts.length > 1) { latexStr = ""; parts.forEach((p, idx) => { if(idx%2===0) { if(p.trim()) latexStr += `\\text{${p.replace(/([&%#_{}])/g, '\\$1')}} `; } else latexStr += p + " "; }); }
+                const svg = await MathJax.tex2svgPromise(latexStr);
+                return new Promise(r => fabric.loadSVGFromString(svg.querySelector('svg').outerHTML, (os, op) => { const g = fabric.util.groupSVGElements(os, op); g.getObjects().forEach(o=>o.set('fill', style.color)); g.scale((fontSize*1.5)/g.height); r(g); }));
+            } else return new fabric.Textbox(text, { fontSize, width, fontFamily: style.font, fill: style.color, textAlign: style.align });
         }
 
         async function renderBlock(text, fontSize, width, style) {
             const lines = text.split('\n'); const objects = []; let y = 0;
-            for (const line of lines) { 
-                const o = await renderLine(line, fontSize, width, style); 
-                o.set({left:0, top:y}); objects.push(o); 
-                y += (o.height * o.scaleY) + 8; 
-            }
+            for (const line of lines) { const o = await renderLine(line, fontSize, width, style); o.set({left:0, top:y}); objects.push(o); y += (o.height*o.scaleY)+8; }
             return new fabric.Group(objects);
         }
 
-        // --- CONFIG & EDITING ---
-        function openConfig(type, existing = null) {
-            currentConfigType = type; activeEditGroup = existing;
-            const body = document.getElementById('modalBody');
-            document.getElementById('configModal').style.display = 'flex';
-            const d = existing ? existing.customData : {};
-            
-            let html = `<div class="style-toolbar">
-                <select id="inpFont">${availableFonts.map(f => `<option ${d.font===f?'selected':''}>${f}</option>`).join('')}</select>
-                <input type="color" id="inpColor" value="${d.color || '#333333'}">
-                <input type="number" id="inpSize" value="${d.size || 24}" style="width:60px;">
-            </div>`;
+        async function drawEduText(d) { let t=50, l=50; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} const g = await renderBlock(d.text, d.size||24, 700, d); g.set({top:t, left:l, customType:'eduText', customData:d}); finishObject(g); }
+        async function drawMCQ(d) { let t=50, l=50; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} const q = await renderBlock(d.q, d.size||24, 600, d); const obs = [q]; let y = q.height*q.scaleY+25; for(let i=0; i<4; i++){ obs.push(new fabric.Circle({radius:8, fill:'transparent', stroke:d.color, strokeWidth:2, top:y+5, left:0})); const o = await renderBlock(d.o[i], (d.size||24)*0.8, 550, d); o.set({top:y, left:30}); obs.push(o); y+= Math.max(o.height*o.scaleY, 30)+15; } const g = new fabric.Group(obs, {top:t, left:l, customType:'mcq', customData:d}); finishObject(g); }
+        async function drawMatching(d) { let t=50, l=50; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} const obs = []; let y = 0; for(let i=0; i<4; i++){ const lO = await renderBlock(d.pairs[i][0], (d.size||24)*0.8, 150, d), rO = await renderBlock(d.pairs[i][1], (d.size||24)*0.8, 150, d), h = Math.max(lO.height*lO.scaleY, rO.height*rO.scaleY, 30); lO.set({top:y+(h-lO.height*lO.scaleY)/2, left:0}); rO.set({top:y+(h-rO.height*rO.scaleY)/2, left:270}); obs.push(lO, new fabric.Circle({radius:4, fill:d.color, top:y+h/2-2, left:160}), new fabric.Circle({radius:4, fill:d.color, top:y+h/2-2, left:250}), rO); y += h+20; } const g = new fabric.Group(obs, {top:t, left:l, customType:'matching', customData:d}); finishObject(g); }
+        async function drawTable(d) { let t=50, l=50; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} const obs = [], rowsH = []; let idx = 0; for(let r=0; r<d.rows; r++){ let maxH = 50; for(let c=0; c<d.cols; c++){ const o = await renderBlock(d.cells[idx++]||" ", (d.size||24)*0.75, 140, d); if(o.height*o.scaleY+20 > maxH) maxH = o.height*o.scaleY+20; rowsH[r]=maxH; } } let currY = 0; idx=0; for(let r=0; r<d.rows; r++){ for(let c=0; c<d.cols; c++){ const rect = new fabric.Rect({width:150, height:rowsH[r], fill:'transparent', stroke:d.color, left:c*150, top:currY}); const o = await renderBlock(d.cells[idx++]||" ", (d.size||24)*0.75, 140, d); o.set({top:currY+(rowsH[r]-o.height*o.scaleY)/2, left:c*150+5}); obs.push(rect, o); } currY += rowsH[r]; } const g = new fabric.Group(obs, {top:t, left:l, customType:'table', customData:d}); finishObject(g); }
+        async function drawMath(latex, color) { let t=100, l=100; if(activeEditGroup){t=activeEditGroup.top; l=activeEditGroup.left; canvas.remove(activeEditGroup);} const svg = await MathJax.tex2svgPromise(latex); fabric.loadSVGFromString(svg.querySelector('svg').outerHTML, (os, op) => { const g = fabric.util.groupSVGElements(os, op); g.getObjects().forEach(o=>o.set('fill', color)); g.scale(30/g.height); g.set({left:l, top:t, customType:'math', customData:{latex, color}}); finishObject(g); }); }
 
-            if (type === 'eduText') html += `<textarea id="inpText" rows="6">${d.text || ''}</textarea>`;
-            else if (type === 'mcq') html += `<textarea id="inpQ">${d.q || ''}</textarea><input id="inpA" value="${d.o?.[0]||''}"> <input id="inpB" value="${d.o?.[1]||''}">`;
-            else if (type === 'math') html += `<textarea id="inpMath">${d.latex || ''}</textarea>`;
-            
-            body.innerHTML = html;
-        }
-
-        async function saveConfig() {
-            const d = { font: document.getElementById('inpFont').value, color: document.getElementById('inpColor').value, size: parseInt(document.getElementById('inpSize').value) };
-            if (activeEditGroup) canvas.remove(activeEditGroup);
-            
-            if (currentConfigType === 'eduText') {
-                d.text = document.getElementById('inpText').value;
-                const g = await renderBlock(d.text, d.size, 700, d);
-                g.set({customType:'eduText', customData:d}); finishObject(g);
-            } else if (currentConfigType === 'math') {
-                const latex = document.getElementById('inpMath').value;
-                await drawMath(latex, d.color);
-            }
-            closeModal();
-        }
-
-        function closeModal() { document.getElementById('configModal').style.display = 'none'; }
         function finishObject(g) { canvas.add(g); canvas.centerObject(g); canvas.setActiveObject(g); canvas.requestRenderAll(); }
 
-        // --- PREVIEW & NAV ---
-        async function renderNavSidebar() {
-            const panel = document.getElementById('slideNavPanel'); panel.innerHTML = '';
-            for(let i=0; i<slides.length; i++) {
-                const btn = document.createElement('div'); btn.className = `nav-slide-btn ${i===currentSlideIndex?'active':''}`;
-                const img = document.createElement('img'); img.className = 'nav-slide-img';
-                if (i === currentSlideIndex) img.src = canvas.toDataURL({format:'jpeg', quality:0.3});
-                else if (slides[i]) {
-                    await new Promise(r => { offCanvas.loadFromJSON(slides[i], () => { img.src = offCanvas.toDataURL({format:'jpeg', quality:0.2}); r(); }); });
-                }
-                btn.innerHTML = `<div class="nav-slide-num">${i+1}</div>`; btn.prepend(img);
-                btn.onclick = () => loadSlide(i); panel.appendChild(btn);
-            }
+        // --- TOOLS ---
+        function addRect() { canvas.add(new fabric.Rect({left:100, top:100, fill:'#4f46e5', width:100, height:100})); }
+        function addCircle() { canvas.add(new fabric.Circle({left:200, top:200, fill:'#ec4899', radius:50})); }
+        function addTriangle() { canvas.add(new fabric.Triangle({left:300, top:150, fill:'#f59e0b', width:100, height:100})); }
+        function addText() { canvas.add(new fabric.IText('Text', {left:100, top:100, fontSize:30})); }
+        function setVintageBg() { canvas.setBackgroundImage(null,()=>canvas.setBackgroundColor('#06402B',()=>canvas.renderAll())); }
+        function setRuledBg() { const i = new Image(); i.src = 'data:image/svg+xml;base64,'+btoa('<svg width="40" height="25" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="25" fill="white"/><line x1="0" y1="24" x2="40" y2="24" stroke="#94a3b8" stroke-width="1"/></svg>'); i.onload=()=>canvas.setBackgroundColor(new fabric.Pattern({source:i, repeat:'repeat'}),()=>canvas.renderAll()); }
+        function setSolidBg(c) { canvas.setBackgroundImage(null,()=>canvas.setBackgroundColor(c,()=>canvas.renderAll())); }
+        function setBgImage(i) { const r = new FileReader(); r.onload=e=>fabric.Image.fromURL(e.target.result, img=>{ img.scale(Math.max(800/img.width, 450/img.height)); canvas.setBackgroundImage(img, ()=>canvas.renderAll()); }); r.readAsDataURL(i.files[0]); }
+        function addObjImage(i) { const r = new FileReader(); r.onload=e=>fabric.Image.fromURL(e.target.result, img=>{ img.scaleToWidth(200); canvas.add(img); }); r.readAsDataURL(i.files[0]); }
+        function deleteObject() { const o = canvas.getActiveObject(); if(o) canvas.remove(o); }
+
+        // --- SLIDE LOGIC ---
+        function saveProject() { saveCurrentState(); const b = new Blob([JSON.stringify(slides)], {type:"application/json"}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download="presentation.json"; a.click(); }
+        function loadProject(i) { const r = new FileReader(); r.onload=e=>{ slides = JSON.parse(e.target.result); loadSlide(0); }; r.readAsText(i.files[0]); }
+        
+        function saveCurrentState() { 
+            slides[currentSlideIndex] = JSON.stringify(canvas.toJSON(['customType', 'customData', 'isInk'])); 
         }
 
-        // --- RECORDING FIX ---
-        async function toggleRecording() {
-            const btn = document.getElementById('btnRec');
-            if (!isRecording) {
-                const stream = canvas.getElement().captureStream(30);
-                const options = MediaRecorder.isTypeSupported('video/mp4') ? {mimeType:'video/mp4'} : {mimeType:'video/webm'};
-                mediaRecorder = new MediaRecorder(stream, options); recordedChunks = [];
-                mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, {type: options.mimeType});
-                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `slide_rec.${options.mimeType.split('/')[1]}`; a.click();
-                };
-                mediaRecorder.start(); isRecording = true; btn.classList.add('recording');
-            } else { mediaRecorder.stop(); isRecording = false; btn.classList.remove('recording'); }
-        }
-
-        // --- SLIDE ENGINE ---
-        function saveCurrentState() { slides[currentSlideIndex] = JSON.stringify(canvas.toJSON(['customType', 'customData'])); }
-        function loadSlide(idx) {
-            saveCurrentState(); currentSlideIndex = idx; canvas.clear();
-            if (slides[idx]) canvas.loadFromJSON(slides[idx], () => { resizeCanvas(); if(isPresentationMode) renderNavSidebar(); });
-            else { canvas.setBackgroundColor('#ffffff'); resizeCanvas(); }
+        async function loadSlide(idx) {
+            saveCurrentState(); currentSlideIndex = idx;
+            canvas.clear();
+            if (slides[idx]) {
+                canvas.loadFromJSON(slides[idx], () => {
+                    resizeCanvas();
+                    if(isPresentationMode) { canvas.selection=false; canvas.forEachObject(o=>o.selectable=false); renderNavSidebar(); }
+                    canvas.renderAll();
+                });
+            } else { canvas.setBackgroundColor('#ffffff'); resizeCanvas(); if(isPresentationMode) renderNavSidebar(); }
             document.getElementById('slideCounter').innerText = `${idx+1} / ${slides.length}`;
         }
+
         function addNewSlide() { saveCurrentState(); slides.push(null); loadSlide(slides.length-1); }
         function nextSlide() { if(currentSlideIndex < slides.length-1) loadSlide(currentSlideIndex+1); }
         function prevSlide() { if(currentSlideIndex > 0) loadSlide(currentSlideIndex-1); }
 
-        // --- TOOLS ---
-        function addText() { canvas.add(new fabric.IText('Tap to Edit', {left:100, top:100, fontSize:30})); }
-        function deleteObject() { const o = canvas.getActiveObject(); if(o) canvas.remove(o); }
-        function setVintageBg() { canvas.setBackgroundColor('#06402B', () => canvas.renderAll()); }
-        function startPresentation() {
-            saveCurrentState(); isPresentationMode = true; document.body.classList.add('presentation-mode');
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) elem.requestFullscreen();
-            document.getElementById('presentationBar').style.display = 'flex'; resizeCanvas();
-        }
-        function endPresentation() { 
-            isPresentationMode = false; document.body.classList.remove('presentation-mode');
-            if (document.exitFullscreen) document.exitFullscreen();
-            document.getElementById('presentationBar').style.display = 'none'; 
-        }
-        function resizeCanvas() {
-            const area = document.getElementById('canvasArea');
-            let w = isPresentationMode ? window.innerWidth : area.clientWidth-20;
-            let h = isPresentationMode ? window.innerHeight : area.clientHeight-20;
-            const s = Math.min(w/BASE_WIDTH, h/BASE_HEIGHT);
-            canvas.setDimensions({ width: BASE_WIDTH*s, height: BASE_HEIGHT*s });
-            canvas.setZoom(s); canvas.renderAll();
+        // --- VISUAL NAV SIDEBAR ---
+        function toggleNavSidebar() {
+            const p = document.getElementById('slideNavPanel');
+            if (p.style.display === 'flex') p.style.display = 'none';
+            else { renderNavSidebar(); p.style.display = 'flex'; }
         }
 
-        // Initial Setup
+        async function renderNavSidebar() {
+            const panel = document.getElementById('slideNavPanel');
+            panel.innerHTML = '';
+            for(let i=0; i<slides.length; i++) {
+                const btn = document.createElement('div');
+                btn.className = `nav-slide-btn ${i === currentSlideIndex ? 'active' : ''}`;
+                const img = document.createElement('img');
+                img.className = 'nav-slide-img';
+                if (i === currentSlideIndex) {
+                    img.src = canvas.toDataURL({ format: 'jpeg', quality: 0.5 });
+                } else if (slides[i]) {
+                    await new Promise(res => { offCanvas.loadFromJSON(slides[i], () => { img.src = offCanvas.toDataURL({ format: 'jpeg', quality: 0.3 }); res(); }); });
+                } else { img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='; }
+                btn.innerHTML = `<div class="nav-slide-num">${i+1}</div>`;
+                btn.prepend(img);
+                btn.onclick = () => loadSlide(i);
+                panel.appendChild(btn);
+            }
+        }
+
+        // --- RECORDING (FIXED FOR MP4) ---
+        async function toggleRecording() {
+            const btn = document.getElementById('btnRec');
+            if (!isRecording) {
+                try {
+                    const stream = document.querySelector('canvas').captureStream(30);
+                    
+                    // Try to get audio stream, but proceed without if denied
+                    let audioStream;
+                    try {
+                        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        audioStream.getAudioTracks().forEach(track => stream.addTrack(track));
+                    } catch(e) { console.warn("Audio denied, recording video only."); }
+
+                    // MIME Type priority: MP4 -> WebM
+                    let options = { mimeType: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"' };
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                        options = { mimeType: 'video/webm; codecs=vp9' };
+                    }
+
+                    mediaRecorder = new MediaRecorder(stream, options);
+                    recordedChunks = [];
+                    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+                    
+                    mediaRecorder.onstop = () => {
+                        const extension = options.mimeType.includes('mp4') ? 'mp4' : 'webm';
+                        const blob = new Blob(recordedChunks, { type: options.mimeType });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `recording_${new Date().getTime()}.${extension}`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    btn.classList.add('recording');
+                } catch (err) {
+                    alert("Recording failed. Please ensure browser permissions are granted.");
+                    console.error(err);
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                btn.classList.remove('recording');
+            }
+        }
+
+        function togglePresentationBar() { const b = document.getElementById('presentationBar'); b.style.display = b.style.display==='none'?'flex':'none'; document.getElementById('presentToggle').classList.toggle('active'); }
+        function setPenMode(m) { isEraserActive=false; canvas.isDrawingMode=true; canvas.freeDrawingBrush.color=document.getElementById('presentPenColor').value; }
+        function setEraserMode() { canvas.isDrawingMode=false; isEraserActive=true; }
+        canvas.on('mouse:move', (e) => { if(isEraserActive && e.target?.isInk) canvas.remove(e.target); });
+        canvas.on('path:created', (e) => { e.path.isInk = true; inkHistory.push(e.path); });
+        function undoInk() { const p = inkHistory.pop(); if(p) { inkRedoStack.push(p); canvas.remove(p); } }
+        function redoInk() { const p = inkRedoStack.pop(); if(p) { inkHistory.push(p); canvas.add(p); } }
+        function updatePenSize(v) { canvas.freeDrawingBrush.width = parseInt(v); }
+        function changePenColor(c) { canvas.freeDrawingBrush.color = c; }
+
+        function startPresentation() {
+            saveCurrentState();
+            isPresentationMode = true;
+            document.body.classList.add('presentation-mode');
+            canvas.selection = false;
+            canvas.forEachObject(o => o.selectable = false);
+            
+            const elem = document.documentElement;
+            const requestMethod = elem.requestFullscreen || elem.webkitRequestFullScreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+            if (requestMethod) requestMethod.call(elem).catch(err => console.warn(err));
+
+            document.getElementById('presentationBar').style.display = 'flex';
+            document.getElementById('presentToggle').classList.add('active');
+            resizeCanvas();
+        }
+
+        function endPresentation() {
+            isPresentationMode = false;
+            document.body.classList.remove('presentation-mode');
+            canvas.selection = true;
+            canvas.forEachObject(o => o.selectable = true);
+            
+            if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
+                const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                if (exitMethod) exitMethod.call(document);
+            }
+
+            document.getElementById('presentationBar').style.display = 'none';
+            document.getElementById('slideNavPanel').style.display = 'none';
+            resizeCanvas();
+        }
+
+        function resizeCanvas() { const area = document.getElementById('canvasArea'); let w = isPresentationMode ? window.innerWidth : area.clientWidth-20, h = isPresentationMode ? window.innerHeight : area.clientHeight-20; const s = Math.min(w/BASE_WIDTH, h/BASE_HEIGHT); canvas.setDimensions({ width: BASE_WIDTH*s, height: BASE_HEIGHT*s }); canvas.setZoom(s); canvas.renderAll(); }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('hidden'); setTimeout(resizeCanvas, 350); }
+        
+        window.addEventListener('resize', resizeCanvas);
         slides[0] = JSON.stringify(canvas.toJSON());
-        window.onresize = resizeCanvas;
         setTimeout(resizeCanvas, 100);
     </script>
 </body>
